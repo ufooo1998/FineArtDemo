@@ -2,11 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FineArtDemo.Areas.Identity.Data;
+using FineArtDemo.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -31,8 +35,17 @@ namespace FineArtDemo
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
+            services.AddDbContext<FineArtDemoContext>(options =>
+                options.UseSqlServer(
+                    Configuration.GetConnectionString("FineArtDemoContextConnection")));
 
+            services.AddMvc();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
+            services.AddIdentity<CustomizeUser, IdentityRole>()
+                        .AddEntityFrameworkStores<FineArtDemoContext>()
+                            .AddDefaultUI()
+                                .AddDefaultTokenProviders();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -50,7 +63,9 @@ namespace FineArtDemo
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            app.UseAuthentication();
             app.UseCookiePolicy();
+            app.UseMvc();
 
             app.UseMvc(routes =>
             {
